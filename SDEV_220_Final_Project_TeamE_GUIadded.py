@@ -43,6 +43,7 @@ class StudentApp:
     def __init__(self):
         self.students_list = []
 
+
     def create_parent(self, parent_first_name, parent_last_name, parent_street, parent_city, student_id):
         # Create Parent instance
         parent = Parent(
@@ -174,6 +175,7 @@ class StudentAppGUI:
 
         except ValueError:
             messagebox.showerror("Error", "Invalid input for Parent ID.")
+
 
     def export_to_csv(self):
         # Get all items in the students_list
