@@ -1,6 +1,7 @@
 import tkinter as tk
 from datetime import date
 from tkinter import messagebox
+import csv
 
 class Person:
     def __init__(self, person_id, first_name, last_name, date_of_birth, contact_number, email, street, city):
@@ -17,14 +18,12 @@ class Person:
         return f"{self.first_name} {self.last_name}"
 
 class Student(Person):
-    def __init__(self, student_id, person_id, street, city, grade, parent_first_name, parent_last_name, **kwargs):
-        super().__init__(person_id=person_id, street=street, city=city, **kwargs)
+    def __init__(self, student_id, person_id, grade, parent_first_name, parent_last_name, **kwargs):
+        super().__init__(person_id=person_id, street="", city="", **kwargs)
         self.student_id = student_id
         self.grade = grade
         self.parent_first_name = parent_first_name
         self.parent_last_name = parent_last_name
-        self.parent_street = street
-        self.parent_city = city
 
     def get_student_details(self):
         return f"Student ID: {self.student_id}, Grade: {self.grade}, " \
@@ -44,11 +43,12 @@ class StudentApp:
     def __init__(self):
         self.students_list = []
 
-    def create_parent(self, parent_first_name, parent_last_name, parent_street, parent_city,student_id):
+
+    def create_parent(self, parent_first_name, parent_last_name, parent_street, parent_city, student_id):
         # Create Parent instance
         parent = Parent(
             student_id=student_id,
-            person_id = student_id,
+            person_id=student_id,
             is_primary_guardian=True,
             first_name=parent_first_name,
             last_name=parent_last_name,
@@ -65,9 +65,8 @@ class StudentApp:
         # Display student details
         self.display_details()
 
-
     def create_student(self, student_id, grade, first_name, last_name, date_of_birth, contact_number,
-                       email, parent_first_name, parent_last_name, parent_street, parent_city):
+                       email, parent_first_name, parent_last_name):
         # Create Student instance
         student = Student(
             student_id=student_id,
@@ -79,9 +78,7 @@ class StudentApp:
             contact_number=contact_number,
             email=email,
             parent_first_name=parent_first_name,
-            parent_last_name=parent_last_name,
-            street=parent_street,
-            city=parent_city
+            parent_last_name=parent_last_name
         )
 
         # Add student to the list
@@ -122,21 +119,20 @@ class StudentAppGUI:
         self.create_entry_widgets(5, "Student Date of Birth:", "student_date_of_birth_entry")
         self.create_entry_widgets(6, "Student Contact Number:", "student_contact_number_entry")
         self.create_entry_widgets(7, "Student Email Address:", "student_email_entry")
-        self.create_entry_widgets(8, "Student Street Address:", "student_street_entry")
-        self.create_entry_widgets(9, "Student City:", "student_city_entry")
 
         # Label
-        tk.Label(self.root, text="Parent Information").grid(row=10, column=0, columnspan=2)
+        tk.Label(self.root, text="Parent Information").grid(row=8, column=0, columnspan=2)
 
         # Gather parent information
-        self.create_entry_widgets(11, "Parent First Name:", "parent_first_name_entry")
-        self.create_entry_widgets(12, "Parent Last Name:", "parent_last_name_entry")
-        self.create_entry_widgets(13, "Parent Street Address:", "parent_street_entry")
-        self.create_entry_widgets(14, "Parent City:", "parent_city_entry")
+        self.create_entry_widgets(9, "Parent First Name:", "parent_first_name_entry")
+        self.create_entry_widgets(10, "Parent Last Name:", "parent_last_name_entry")
+        self.create_entry_widgets(11, "Parent Street Address:", "parent_street_entry")
+        self.create_entry_widgets(12, "Parent City:", "parent_city_entry")
 
         # Buttons
-        tk.Button(self.root, text="Create Student", command=self.create_student).grid(row=16, column=0, columnspan=2)
-        tk.Button(self.root, text="Create Parent", command=self.create_parent).grid(row=17, column=0, columnspan=2)
+        tk.Button(self.root, text="Create Student", command=self.create_student).grid(row=13, column=0, columnspan=2)
+        tk.Button(self.root, text="Create Parent", command=self.create_parent).grid(row=14, column=0, columnspan=2)
+        tk.Button(self.root, text="Export to CSV", command=self.export_to_csv).grid(row=15, column=0, columnspan=2)
 
     def create_entry_widgets(self, row, label_text, entry_name):
         tk.Label(self.root, text=label_text).grid(row=row, column=0)
@@ -155,13 +151,11 @@ class StudentAppGUI:
             email = self.student_email_entry.get()
             parent_first_name = self.parent_first_name_entry.get()
             parent_last_name = self.parent_last_name_entry.get()
-            parent_street = self.parent_street_entry.get()
-            parent_city = self.parent_city_entry.get()
 
             # Call create_student method in StudentApp
             self.app.create_student(
                 student_id, grade, first_name, last_name, date_of_birth, contact_number,
-                email, parent_first_name, parent_last_name, parent_street, parent_city
+                email, parent_first_name, parent_last_name
             )
 
         except ValueError:
@@ -183,7 +177,38 @@ class StudentAppGUI:
             messagebox.showerror("Error", "Invalid input for Parent ID.")
 
 
+    def export_to_csv(self):
+        # Get all items in the students_list
+        items = self.app.students_list
+
+        # Prepare data for student_info.csv and parent_info.csv
+        student_info_data = []
+        parent_info_data = []
+
+        for person in items:
+            if isinstance(person, Student):
+                student_info_data.append([person.student_id, person.get_full_name(), person.grade,
+                                      person.parent_first_name, person.parent_last_name
+                                    ])  # Include parent's address for student
+            elif isinstance(person, Parent):
+                parent_info_data.append([person.parent_id, person.get_full_name(), person.is_primary_guardian,
+                                     person.street, person.city])
+
+    # Write to CSV files
+        self.write_to_csv("student_info.csv", ["Student ID", "Name", "Grade", "Parent First Name", "Parent Last Name"], student_info_data)
+        self.write_to_csv("parent_info.csv", ["Parent ID", "Name", "Primary Guardian", "Street", "City"], parent_info_data)
+
+        messagebox.showinfo("Export Successful", "Data exported to CSV files successfully.")
+
+
+
+    def write_to_csv(self, filename, header, data):
+        with open(filename, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(header)
+            writer.writerows(data)
+
 if __name__ == "__main__":
     root = tk.Tk()
     app_gui = StudentAppGUI(root)
-    root.mainloop() 
+    root.mainloop()
