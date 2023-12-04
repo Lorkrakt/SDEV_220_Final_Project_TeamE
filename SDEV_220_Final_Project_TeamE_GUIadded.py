@@ -44,10 +44,11 @@ class StudentApp:
     def __init__(self):
         self.students_list = []
 
-    def create_parent(self, parent_first_name, parent_last_name, parent_street, parent_city):
+    def create_parent(self, parent_first_name, parent_last_name, parent_street, parent_city,student_id):
         # Create Parent instance
         parent = Parent(
-            student_id=len(self.students_list) + 1,
+            student_id=student_id,
+            person_id = student_id,
             is_primary_guardian=True,
             first_name=parent_first_name,
             last_name=parent_last_name,
@@ -62,7 +63,8 @@ class StudentApp:
         self.students_list.append(parent)
 
         # Display student details
-        self.display_student_details()
+        self.display_details()
+
 
     def create_student(self, student_id, grade, first_name, last_name, date_of_birth, contact_number,
                        email, parent_first_name, parent_last_name, parent_street, parent_city):
@@ -86,13 +88,16 @@ class StudentApp:
         self.students_list.append(student)
 
         # Display student details
-        self.display_student_details()
+        print("Student created. Please create parent.")
 
-    def display_student_details(self):
-        # Display all students with numbering
+    def display_details(self):
+        # Display all details with numbering
         details = ""
-        for i, student in enumerate(self.students_list, start=1):
-            details += f"{i}. {student.get_student_details()}\n"
+        for i, person in enumerate(self.students_list, start=1):
+            if isinstance(person, Student):
+                details += f"{i}. {person.get_student_details()}\n"
+            elif isinstance(person, Parent):
+                details += f"{i}. {person.get_parent_details()}\n"
 
         print(details)
 
@@ -166,13 +171,17 @@ class StudentAppGUI:
         # Get data from entry fields
         try:
             parent_first_name = self.parent_first_name_entry.get()
-            # Get parent information...
+            parent_last_name = self.parent_last_name_entry.get()
+            parent_street = self.parent_street_entry.get()
+            parent_city = self.parent_city_entry.get()
+            person_id = int(self.student_id_entry.get())  # Assuming student_id is the person_id for the parent
 
             # Create parent
-            self.app.create_parent(parent_first_name, "Doe", "Doe Street", "Doe City")
+            self.app.create_parent(parent_first_name, parent_last_name, parent_street, parent_city, person_id)
 
         except ValueError:
             messagebox.showerror("Error", "Invalid input for Parent ID.")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
