@@ -115,6 +115,8 @@ class StudentAppGUI:
         self.root.title("Student App")
         self.app = StudentApp()
 
+        self.student_created = False
+        self.parent_created = False
         # Create and place widgets
         self.create_widgets()
 
@@ -170,6 +172,9 @@ class StudentAppGUI:
             parent_first_name = self.parent_first_name_entry.get()
             parent_last_name = self.parent_last_name_entry.get()
 
+            #sets student creation to true
+            self.student_created = True
+
             # Call create_student method in StudentApp
             self.app.create_student(
                 student_id, grade, first_name, last_name, date_of_birth, contact_number,
@@ -191,6 +196,9 @@ class StudentAppGUI:
             parent_street = self.parent_street_entry.get()
             parent_city = self.parent_city_entry.get()
             person_id = int(self.student_id_entry.get())  
+
+            #sets parent creation true
+            self.parent_created = True
 
             # Create parent
             self.app.create_parent(parent_first_name, parent_last_name, parent_street, parent_city, person_id,email)
@@ -223,6 +231,12 @@ class StudentAppGUI:
     ])
 
     def export_to_csv(self):
+        
+        #checks if student AND parent have been created before exporting
+        if not (self.student_created and self.parent_created):
+            messagebox.showerror("Error", "Please create both student and parent before exporting.")
+            return
+        
         # Get all items in the students_list
         items = self.app.students_list
 
@@ -279,6 +293,10 @@ class StudentAppGUI:
 
         # Clear the entry widgets
         self.clear_entry_widgets()
+        
+        #clear check for if student/parent have been created
+        self.student_created = False
+        self.parent_created = False
 
         messagebox.showinfo("Export Successful", "Data exported to CSV files successfully.")
 
