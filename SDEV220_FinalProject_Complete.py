@@ -127,7 +127,7 @@ class StudentAppGUI:
         self.create_entry_widgets(2, "Student Grade:", "student_grade_entry")
         self.create_entry_widgets(3, "Student First Name:", "student_first_name_entry")
         self.create_entry_widgets(4, "Student Last Name:", "student_last_name_entry")
-        self.create_entry_widgets(5, "Student Date of Birth:", "student_date_of_birth_entry")
+        self.create_entry_widgets(5, "Date of Birth (YYYY-MM-DD):", "student_date_of_birth_entry")
         self.create_entry_widgets(6, "Student Contact Number:", "student_contact_number_entry")
         
 
@@ -157,7 +157,7 @@ class StudentAppGUI:
         #if nothing present reports an error
     def create_student(self):
         if not self.validate_student_entries():
-            messagebox.showerror("Error", "Please fill out all student information fields.")
+            messagebox.showerror("Error", "Please fill out all information fields.")
             return
 
         try:
@@ -182,7 +182,7 @@ class StudentAppGUI:
     def create_parent(self):
         # Get data from entry fields
         if not self.validate_parent_entries():
-            messagebox.showerror("Error", "Please fill out all parent information fields.")
+            messagebox.showerror("Error", "Please fill out all information fields.")
             return
         try:
             parent_first_name = self.parent_first_name_entry.get()
